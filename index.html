@@ -270,7 +270,7 @@ const T={
   more:'Más',lang:'Idioma',backup:'Respaldo',backupTxt:'Tus tames, notas y lista se guardan solo en este teléfono. Copia el respaldo para guardarlo o pásalo a otro dispositivo.',copy:'Copiar respaldo',copied:'Respaldo copiado',
   copyFail:'No se pudo copiar. Selecciona el texto y cópialo.',paste:'Pega aquí un respaldo para restaurarlo',restore:'Restaurar',restored:'Respaldo restaurado',badBackup:'El respaldo no es válido.',
   about:'Acerca de',aboutTxt:'Basada en el Excel «Tameables ASA v1.0» con 193 criaturas. La información de tameo proviene de Dododex, ARK Wiki y ARK: Survival Ascended Wiki (wikily.gg). Los nombres en español son aproximados y no oficiales. Todos los créditos a sus autores.',
-  theme:'Tema',th_auto:'Automático',th_light:'Claro',th_dark:'Oscuro',unit:'unid.',incomplete:'Ficha incompleta',of:' de ',reset:'Borrar los datos de esta partida',resetAsk:'Toca de nuevo para confirmar',resetDone:'Datos borrados',fsT:'Tamaño de letra',fs_m:'Normal',fs_l:'Grande',fs_xl:'Extra grande',esNames:'Nombres en español aproximados',on:'Mostrar',off:'Ocultar',
+  theme:'Tema',th_auto:'Automático',th_light:'Claro',th_dark:'Oscuro',unit:'unid.',incomplete:'Ficha incompleta',of:' de ',gclr:'Borrar la bitácora In-Game',gclrAsk:'Toca de nuevo para confirmar',gclrTxt:'Borra los días, objetivos, golpes, notas, muertes del jugador y objetivos a largo plazo de esta partida. Tus tames y su Bitácora de tameo no se tocan.',gclrNone:'La bitácora In-Game ya está vacía',reset:'Borrar los datos de esta partida',resetAsk:'Toca de nuevo para confirmar',resetDone:'Datos borrados',fsT:'Tamaño de letra',fs_s:'Pequeño',fs_m:'Normal',fs_l:'Grande',fs_xl:'Extra grande',esNames:'Nombres en español aproximados',on:'Mostrar',off:'Ocultar',
   mapsT:'Mis mapas',mapsTxt:'Estos mapas se sugieren al registrar un tame. Puedes agregar los tuyos.',mapAdd:'Nuevo mapa',mapAddBtn:'Agregar',mapReset:'Restaurar lista original',
   fileDl:'Descargar respaldo (archivo)',fileDlNote:'Funciona en la app instalada. En la página de prueba usa copiar y pegar.',fileUp:'Cargar respaldo desde archivo',fileDone:'Archivo descargado',
   lastB:'Último respaldo',never:'nunca',remindT:'Recordatorio de respaldo',remindTxt:'Te avisa con un mensaje en pantalla si pasan días sin respaldar.',
@@ -320,7 +320,7 @@ const T={
   more:'More',lang:'Language',backup:'Backup',backupTxt:'Your tames, notes and list are stored only on this phone. Copy the backup to keep it or move it to another device.',copy:'Copy backup',copied:'Backup copied',
   copyFail:'Could not copy. Select the text and copy it.',paste:'Paste a backup here to restore it',restore:'Restore',restored:'Backup restored',badBackup:'That backup is not valid.',
   about:'About',aboutTxt:'Based on the “ASA Tameables v1.0” Excel with 193 creatures. Taming information comes from Dododex, ARK Wiki and ARK: Survival Ascended Wiki (wikily.gg). Spanish names are approximate and unofficial. All credits to their authors.',
-  theme:'Theme',th_auto:'Automatic',th_light:'Light',th_dark:'Dark',unit:'pcs',incomplete:'Incomplete entry',of:' of ',reset:'Delete this game\'s data',resetAsk:'Tap again to confirm',resetDone:'Data deleted',fsT:'Text size',fs_m:'Normal',fs_l:'Large',fs_xl:'Extra large',esNames:'Approximate Spanish names',on:'Show',off:'Hide',
+  theme:'Theme',th_auto:'Automatic',th_light:'Light',th_dark:'Dark',unit:'pcs',incomplete:'Incomplete entry',of:' of ',gclr:'Clear the In-Game log',gclrAsk:'Tap again to confirm',gclrTxt:'Deletes the days, goals, hits, notes, player deaths and long-term goals of this game. Your tames and their tame log are not touched.',gclrNone:'The In-Game log is already empty',reset:'Delete this game\'s data',resetAsk:'Tap again to confirm',resetDone:'Data deleted',fsT:'Text size',fs_s:'Small',fs_m:'Normal',fs_l:'Large',fs_xl:'Extra large',esNames:'Approximate Spanish names',on:'Show',off:'Hide',
   mapsT:'My maps',mapsTxt:'These maps are suggested when you log a tame. You can add your own.',mapAdd:'New map',mapAddBtn:'Add',mapReset:'Restore original list',
   fileDl:'Download backup (file)',fileDlNote:'Works in the installed app. On the preview page use copy and paste.',fileUp:'Load backup from file',fileDone:'File downloaded',
   lastB:'Last backup',never:'never',remindT:'Backup reminder',remindTxt:'Shows an on-screen message if days pass without a backup.',
@@ -595,6 +595,7 @@ function pendingOrdered(){
 function allEntries(){const all=[];Object.keys(S.tames).forEach(k=>S.tames[k].forEach(e=>all.push({...e,cid:+k})));return all}
 function findEntry(eid){for(const k of Object.keys(S.tames)){const e=S.tames[k].find(x=>x.id===eid);if(e)return {e,cid:+k}}return null}
 function dayOf(id){return S.days.find(d=>d.id===id)}
+function bkAgo(ts){if(!ts)return t().never;const d=Math.floor((Date.now()-ts)/864e5);const es=S.lang==='es';const w=d<=0?(es?'hoy':'today'):d===1?(es?'ayer':'yesterday'):(es?'hace '+d+' días':d+' days ago');return w+' · '+fmtDate(ts)}
 function fmtDT(ts,hx){return ts?fmtDate(ts)+(hx?' · '+fmtTime(ts):''):''}
 function causeCount(list){const m=new Map();list.forEach(c=>{const s=(c||'').trim();if(!s)return;const k=norm(s);const o=m.get(k);if(o)o.n++;else m.set(k,{s,n:1})});return [...m.values()].sort((a,b)=>b.n-a.n||a.s.localeCompare(b.s))}
 function allCauses(){const l=[];S.profiles.forEach(p=>{Object.values(p.tames||{}).forEach(a=>a.forEach(e=>{if(isDead(e)&&e.dc)l.push(e.dc)}));(p.days||[]).forEach(d=>(d.deaths||[]).forEach(x=>{if(x.cause)l.push(x.cause)}))});return causeCount(l)}
@@ -727,7 +728,7 @@ function lgHTML(){
 function etxForm(){return `<input id="etx" type="text" maxlength="200" autocomplete="off" value="${esc(S.etxt.val)}" data-enter="etxok" style="flex:1;min-width:0;padding:8px 10px;border-radius:10px;border:1px solid var(--accent);background:var(--surface)"><button class="btn sm pri" data-act="etxok" aria-label="${t().save}">✓</button><button class="xb" data-act="etxcancel" aria-label="${t().cancel}">✕</button>`}
 const etxOn=(k,id)=>S.etxt&&S.etxt.kind===k&&S.etxt.id===id;
 function goalGroup(g){const all=S.days.flatMap(x=>x.goals||[]);const grp=new Set([g.id]);let ch=true;while(ch){ch=false;all.forEach(y=>{if(y.src&&grp.has(y.src)&&!grp.has(y.id)){grp.add(y.id);ch=true}if(grp.has(y.id)&&y.src&&!grp.has(y.src)){grp.add(y.src);ch=true}})}return all.filter(y=>grp.has(y.id))}
-function qbHTML(){const lb=S.lastB?fmtDT(S.lastB,1):t().never;return `<div class="card" style="display:flex;align-items:center;gap:10px;margin-top:10px"><div style="flex:1;min-width:0"><div style="font-weight:600">${t().qbT}</div><div class="note">${t().lastB}: ${esc(lb)}</div></div><button class="btn" data-act="qbk">${t().qbBtn}</button></div>`}
+function qbHTML(){const lb=bkAgo(S.lastB);return `<div class="card" style="display:flex;align-items:center;gap:10px;margin-top:10px"><div style="flex:1;min-width:0"><div style="font-weight:600">${t().qbT}</div><div class="note">${t().lastB}: ${esc(lb)}</div></div><button class="btn" data-act="qbk">${t().qbBtn}</button></div>`}
 function renderGame(){
   const days=S.days.slice().sort((a,b)=>b.n-a.n||(b.t||0)-(a.t||0));
   const gm=new Map();S.days.forEach(d=>(d.goals||[]).forEach(g=>{let c=g,n=0;while(c.src&&n++<200){const f=goalById(c.src);if(!f)break;c=f.g}gm.set(c.id,(gm.get(c.id)||false)||g.done)}));const done=[...gm.values()].filter(Boolean).length+'/'+gm.size,dx=S.days.reduce((a,d)=>a+(d.deaths||[]).length,0);
@@ -832,13 +833,13 @@ function answer(raw){
 // ---------- more
 function segOpts(opts,act,cur){return `<div class="seg">${opts.map(([v,l])=>`<button data-act="${act}" data-v="${v}" aria-pressed="${String(cur)===String(v)}">${l}</button>`).join('')}</div>`}
 function renderMore(){
-  const lb=S.lastB?new Date(S.lastB).toLocaleDateString(S.lang==='es'?'es-CL':'en-US'):t().never;
+  const lb=bkAgo(S.lastB);
   document.getElementById('main').innerHTML=`<div class="stack">
    <div class="card"><h2 class="sec" style="margin:0 0 8px">${t().lang}</h2>${segOpts([['es','Español'],['en','English']],'lang',S.lang)}
     <h2 class="sec" style="margin:16px 0 8px">${t().theme}</h2>${segOpts([['auto',t().th_auto],['light',t().th_light],['dark',t().th_dark]],'theme',S.theme)}
-    <h2 class="sec" style="margin:16px 0 8px">${t().fsT}</h2>${segOpts([[1,t().fs_m],[1.15,t().fs_l],[1.3,t().fs_xl]],'fs',S.fs)}
+    <h2 class="sec" style="margin:16px 0 8px">${t().fsT}</h2>${segOpts([[0.9,t().fs_s],[1,t().fs_m],[1.15,t().fs_l],[1.3,t().fs_xl]],'fs',S.fs)}
     <h2 class="sec" style="margin:16px 0 8px">${t().esNames}</h2>${segOpts([['0',t().on],['1',t().off]],'noes',S.noes?1:0)}
-    <h2 class="sec" style="margin:16px 0 8px">${t().diaryT}</h2><p class="note" style="margin:0 0 8px">${t().diaryTxt}</p>${segOpts([['1',t().on],['0',t().off]],'diary',S.diary?1:0)}
+    <h2 class="sec" style="margin:16px 0 8px">${t().diaryT}</h2><p class="note" style="margin:0 0 8px">${t().diaryTxt}</p>${segOpts([['1',t().on],['0',t().off]],'diary',S.diary?1:0)}${S.diary?`<p class="note" style="margin:12px 0 8px">${t().gclrTxt}</p><button class="btn sm danger" data-act="gclr">${S.gclrArm?t().gclrAsk:t().gclr}</button>`:''}
     ${S.diary?`<h2 class="sec" style="margin:16px 0 8px">${t().cdT}</h2><p class="note" style="margin:0 0 8px">${t().cdTxt}</p>${segOpts([['1',t().yesL],['0',t().noL]],'cdead',S.cdead?1:0)}`:''}</div>
    <div class="card"><h2 class="sec" style="margin:0 0 6px">${t().prof}</h2><p class="note" style="margin:0 0 10px">${t().profTxt}</p>
     ${S.profiles.map(p=>`<div class="trow"><input type="text" maxlength="30" value="${esc(p.name)}" data-profname="${p.id}" aria-label="${t().profRename}">${p.id===S.cur?`<span class="badge ok">${t().profCur}</span>`:`<button class="btn sm" data-act="profsel" data-id="${p.id}">${t().profGo}</button>`}${S.profiles.length>1?`<button class="btn sm danger" data-act="profdel" data-id="${p.id}">${S.delArm===p.id?t().profDelAsk:t().profDel}</button>`:''}</div>`).join('')}
@@ -1095,6 +1096,7 @@ document.addEventListener('click',ev=>{
   else if(a==='mapreset'){S.maps=null;save();renderMore()}
   else if(a==='rmgo'){S.tab=4;render();window.scrollTo(0,0)}
   else if(a==='rmlater'){S.snooze=Date.now()+3*864e5;save();refreshMain()}
+  else if(a==='gclr'){if(!S.days.length&&!S.lgoals.length){toast(t().gclrNone);return}if(!S.gclrArm){S.gclrArm=true;renderMore();clearTimeout(S.gh);S.gh=setTimeout(()=>{S.gclrArm=false;if(S.tab===4)renderMore()},4000)}else{S.gclrArm=false;undoable(()=>{S.days=[];S.lgoals=[];save()});renderMore()}}
   else if(a==='reset'){if(!S.resetArm){S.resetArm=true;renderMore();clearTimeout(S.rh);S.rh=setTimeout(()=>{S.resetArm=false;if(S.tab===4)renderMore()},4000)}
     else{S.resetArm=false;S.tames={};S.notes={};S.want={};S.tags=[];S.tagmap={};S.days=[];S.lgoals=[];save();toast(t().resetDone);render()}}
 });
